@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Form View customizations -->
+    <record id="sale_order_inherited_form_everfall" model="ir.ui.view">
+        <field name="name">sale.order.inherited.form.everfall</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
+            <attribute name="context">{'show_address': 1}</attribute>
+        </xpath>
+            <xpath expr="//field[@name='validity_date']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="project_id" readonly="1"/>
+                <field name="state_custom"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="replace">
+                <field name="partner_id"
+                       string="Provider"
+                       widget="res_partner_many2one"
+                       context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
+                       placeholder="Type to find a customer..." readonly="state in ['cancel', 'sale']"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Client Photos">
+                    <field name="client_photo_ids" widget="many2many_binary" string="Attach a Photo"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!--    list View customizations -->
+    <record id="sale_order_inherited_list_everfall" model="ir.ui.view">
+        <field name="name">sale.order.inherited.form.everfall</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="state_custom" widget="badge" decoration-info="state_custom == 'booked'" decoration-warning="state_custom == 'hold'" decoration-danger="state_custom == 'cancelled'"/>
+            </xpath>
+            <xpath expr="//field[@name='validity_date']" position="replace">
+            </xpath>
+            <xpath expr="//field[@name='create_date']" position="after">
+                <field name="details" />
+                <field name="suburb"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="string">Provider</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
