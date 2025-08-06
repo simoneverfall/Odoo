@@ -48,3 +48,9 @@ class SaleOrder(models.Model):
             'project_id': project.id,
         })
         return project
+
+    # Remove the note (terms and conditions) so it does not carry over to the invoice
+    def _prepare_invoice(self):
+        invoice_vals = super(SaleOrder, self)._prepare_invoice()
+        invoice_vals.pop('narration', None)
+        return invoice_vals
