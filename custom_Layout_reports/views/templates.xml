@@ -1,0 +1,184 @@
+<odoo>
+    <data>
+        <template id="external_layout_custom">
+            <t t-if="not o" t-set="o" t-value="doc"/>
+
+            <t t-if="not company">
+                <!-- Multicompany -->
+                <t t-if="company_id">
+                    <t t-set="company" t-value="company_id"/>
+                </t>
+                <t t-elif="o and 'company_id' in o and o.company_id.sudo()">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                </t>
+                <t t-else="else">
+                    <t t-set="company" t-value="res_company"/>
+                </t>
+            </t>
+
+            <t t-call="custom_Layout_reports.external_layout_standard_custom"><t t-out="0"/></t>
+
+        </template>
+        <template id="external_layout_standard_custom">
+            <div t-attf-class="header o_company_#{company.id}_layout">
+                <div class="row mb8">
+                    <div class="col-4">
+                        <img t-if="company.logo" class="o_company_logo_big" t-att-src="image_data_uri(company.logo)" alt="Logo" style="min-width: 300px;"/>
+                    </div>
+                    <div class="col-8 text-end mb4">
+                        <div name="company_address" class="float-end mb4">
+                            <ul class="list-unstyled" name="company_address_list">
+                                <li t-if="company.is_company_details_empty"><span t-field="company.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'>
+                                    <div class="bg-light border-1 rounded h-100 d-flex flex-column align-items-center justify-content-center p-4 w-100 opacity-75 text-muted text-center">
+                                        <strong>Company address block</strong>
+                                        <div>Contains the company address.</div>
+                                    </div>
+                                </span></li>
+                                <li t-else="">
+                                    <span t-field="company.company_details">
+                                        <div class="bg-light border-1 rounded h-100 d-flex flex-column align-items-center justify-content-center p-4 w-100 opacity-75 text-muted text-center">
+                                            <strong>Company details block</strong>
+                                            <div>Contains the company details.</div>
+                                        </div>
+                                    </span>
+                                </li>
+                                <li t-if="not forced_vat"/>
+                                <li t-else="">
+                                    <t t-esc="company.country_id.vat_label or 'Tax ID'">Tax ID</t>:
+                                    <span t-esc="forced_vat">US12345671</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div t-attf-class="article o_report_layout_boxed o_table_boxed o_company_#{company.id}_layout o_snail_mail {{'o_report_layout_background' if company.layout_background != 'Blank' else ''}}"
+                 t-attf-style="background-image: url({{ 'data:image/png;base64,%s' % company.layout_background_image.decode('utf-8') if company.layout_background_image and company.layout_background == 'Custom' else
+                           '/base/static/img/demo_logo_report.png' if company.layout_background == 'Demo logo' else ''}});"
+                 t-att-data-oe-model="o and o._name"
+                 t-att-data-oe-id="o and o.id"
+                 t-att-data-oe-lang="o and o.env.context.get('lang')">
+                <t t-call="web.address_layout"/>
+                <h2 t-out="layout_document_title"/>
+                <t t-out="0"/>
+            </div>
+
+            <div t-attf-class="footer o_company_#{company.id}_layout {{report_type != 'pdf' and 'mt-auto'}}">
+                <div class="o_footer_content row border-top pt-2">
+                    <div class="col-8">
+                        <span t-field="company.report_footer"/>
+                    </div>
+                    <div class="col-4 text-end">
+                        <strong t-if="company.report_header" t-field="company.report_header" class="o_company_tagline">Company tagline</strong>
+                        <span t-if="report_type == 'pdf' and display_name_in_footer" class="text-muted" t-out="str(o.name) + ', '">(document name)</span>
+                        <span t-if="report_type == 'pdf'" class="text-muted">Page <span class="page"/> / <span class="topage"/></span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="custom_report_invoice_document" inherit_id="account.report_invoice_document">
+
+            <xpath expr="//t[@t-call='web.external_layout']" position="attributes">
+                <attribute name="t-call">custom_Layout_reports.external_layout_custom</attribute>
+            </xpath>
+            <!--            <xpath expr="//div[@name='comment']" position="before">-->
+            <!--                <strong style="font-weight: bold;">Due Date:<span t-field="o.invoice_date_due">2025-03-21</span></strong>-->
+            <!--            </xpath>-->
+            <!--            <xpath expr="//div[@class='row']" position="replace">-->
+            <!--                <div class="clearfix"/>-->
+            <!--                <br/><br/>-->
+            <!--                <br/><br/><br/>-->
+            <!--                <br/><br/><br/>-->
+            <!--            </xpath>-->
+        </template>
+        <template id="report_saleorder_custom" inherit_id="sale.report_saleorder_document">
+            <xpath expr="//t[@t-call='web.external_layout']" position="attributes">
+                <attribute name="t-call">custom_Layout_reports.external_layout_custom</attribute>
+            </xpath>
+            <xpath expr="//t[@t-set='information_block']" position="replace">
+                <!-- Your custom content goes here -->
+                <t t-set="information_block">
+                    <strong>
+                        <t t-if="doc.partner_shipping_id == doc.partner_invoice_id">
+                            Invoicing and Shipping Address
+                        </t>
+                        <t t-else="">
+                            Invoicing Address
+                        </t>
+                    </strong>
+                    <div>
+                        <t t-if="doc.partner_invoice_id.display_name">
+                            <div t-attf-style="line-height: 25px;"><t t-esc="doc.partner_invoice_id.display_name"/></div>
+                        </t>
+                        <t t-if="doc.partner_invoice_id.street">
+                            <div t-attf-style="line-height: 15px;"><t t-esc="doc.partner_invoice_id.street"/></div>
+                        </t>
+                        <t t-if="doc.partner_invoice_id.street2">
+                            <div t-attf-style="line-height: 15px;"><t t-esc="doc.partner_invoice_id.street2"/></div>
+                        </t>
+                        <t t-if="doc.partner_invoice_id.city or doc.partner_invoice_id.zip">
+                            <div >
+                                <t t-esc="doc.partner_invoice_id.city"/>
+                                <t t-if="doc.partner_invoice_id.zip">, <t t-esc="doc.partner_invoice_id.zip"/></t>
+                            </div>
+                        </t>
+                        <t t-if="doc.partner_invoice_id.state_id">
+                            <div t-attf-style="line-height: 15px;"><t t-esc="doc.partner_invoice_id.state_id.name"/></div>
+                        </t>
+                        <!-- Country is intentionally omitted -->
+                        <t t-if="doc.partner_invoice_id.phone">
+                            <div t-attf-style="line-height: 30px;"><strong><i class="fa fa-phone"/></strong> <t t-esc="doc.partner_invoice_id.phone"/></div>
+                        </t>
+                    </div>
+
+                    <t t-if="doc.partner_shipping_id != doc.partner_invoice_id">
+                        <strong>Delivery Address</strong>
+                        <div>
+                            <t t-if="doc.partner_shipping_id.name">
+                                <div t-attf-style="line-height: 25px;"><t t-esc="doc.partner_shipping_id.name"/></div>
+                            </t>
+                            <t t-if="doc.partner_shipping_id.street">
+                                <div t-attf-style="line-height: 15px;"><t t-esc="doc.partner_shipping_id.street"/></div>
+                            </t>
+                            <t t-if="doc.partner_shipping_id.street2">
+                                <div t-attf-style="line-height: 15px;"><t t-esc="doc.partner_shipping_id.street2"/></div>
+                            </t>
+                            <t t-if="doc.partner_shipping_id.city or doc.partner_shipping_id.zip">
+                                <div>
+                                    <t t-esc="doc.partner_shipping_id.city"/>
+                                    <t t-if="doc.partner_shipping_id.zip">, <t t-esc="doc.partner_shipping_id.zip"/></t>
+                                </div>
+                            </t>
+                            <t t-if="doc.partner_shipping_id.state_id">
+                                <div t-attf-style="line-height: 15px;"><t t-esc="doc.partner_shipping_id.state_id.name"/></div>
+                            </t>
+                            <!-- Country intentionally omitted -->
+                            <t t-if="doc.partner_shipping_id.phone">
+                                <div t-attf-style="line-height: 30px;"><strong><i class="fa fa-phone"/> </strong> <t t-esc="doc.partner_shipping_id.phone"/></div>
+                            </t>
+                        </div>
+                    </t>
+
+                </t>
+
+            </xpath>
+            <xpath expr="//div[@t-field='doc.partner_id']" position="before">
+                <p style="font-weight: 600;">Case Manager</p>
+            </xpath>
+        </template>
+        <template id="report_purchasequotation_document_custom" inherit_id="purchase.report_purchasequotation_document">
+            <xpath expr="//t[@t-call='web.external_layout']" position="attributes">
+                <attribute name="t-call">custom_Layout_reports.external_layout_custom</attribute>
+            </xpath>
+        </template>
+        <template id="report_purchase_custom" inherit_id="purchase.report_purchaseorder_document">
+            <xpath expr="//t[@t-call='web.external_layout']" position="attributes">
+                <attribute name="t-call">custom_Layout_reports.external_layout_custom</attribute>
+            </xpath>
+        </template>
+
+
+    </data>
+</odoo>
