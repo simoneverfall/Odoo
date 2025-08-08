@@ -9,7 +9,7 @@ class SaleOrder(models.Model):
         ('booked', 'Booked'),
         ('cancelled', 'Cancelled'),
         ('hold', 'Hold'),
-    ], string="Order    Status", default="booked")
+    ], string="Order Status")
     project_id = fields.Many2one('project.project',string="Project")
     client_photo_ids = fields.Many2many(
         'ir.attachment',
@@ -54,3 +54,20 @@ class SaleOrder(models.Model):
         invoice_vals = super(SaleOrder, self)._prepare_invoice()
         invoice_vals.pop('narration', None)
         return invoice_vals
+
+class ProductSupplierInfo(models.Model):
+    _inherit = 'product.supplierinfo'
+
+    @api.model
+    def default_get(self, fields_list):
+        defaults = super().default_get(fields_list)
+
+        # Try to get product template ID from context
+        product_tmpl_id = self.env.context.get('default_product_tmpl_id')
+
+        if product_tmpl_id:
+            product_tmpl = self.env['product.template'].browse(product_tmpl_id)
+            if 'price' in fields_list and product_tmpl.standard_price:
+                defaults['price'] = product_tmpl.standard_price
+
+        return defaults
