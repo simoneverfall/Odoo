@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_invoice_form_inherited" model="ir.ui.view">
+        <field name="name">account.move.form.inherited</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Client Photos">
+                    <field name="client_photo_ids" widget="many2many_binary" string="Attach a Photo"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
