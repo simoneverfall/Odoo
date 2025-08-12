@@ -14,7 +14,7 @@
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="project_id" readonly="1"/>
-                <field name="state_custom"/>
+                <field name="x_state_custom"/>
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="replace">
                 <field name="partner_id"
@@ -38,16 +38,19 @@
         <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='amount_total']" position="after">
-                <field name="state_custom" widget="badge" decoration-info="state_custom == 'booked'" decoration-warning="state_custom == 'hold'" decoration-danger="state_custom == 'cancelled'"/>
+                <field name="x_state_custom" widget="badge" decoration-info="x_state_custom == 'booked' or x_state_custom == 'approved'" decoration-warning="x_state_custom == 'hold'" decoration-primary="x_state_custom == 'awaiting_approval' or x_state_custom == 'to_quote_required'" decoration-danger="x_state_custom == 'cancelled'" decoration-success="x_state_custom == 'complete'"/>
             </xpath>
             <xpath expr="//field[@name='validity_date']" position="replace">
             </xpath>
-            <xpath expr="//field[@name='create_date']" position="after">
-                <field name="details" />
-                <field name="suburb"/>
+            <xpath expr="//field[@name='create_date']" position="before">
+                <field name="client_name" string="Client Name"/>
             </xpath>
-            <xpath expr="//field[@name='partner_id']" position="attributes">
-                <attribute name="string">Provider</attribute>
+            <xpath expr="//field[@name='create_date']" position="after">
+                <field name="details" string="Address"/>
+                <field name="suburb"/>
+                <field name="provider_name"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="replace">
             </xpath>
         </field>
     </record>

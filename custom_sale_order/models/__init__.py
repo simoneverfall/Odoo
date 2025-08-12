@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from . import sale_order_customizations
+from . import account_move,product_product,project_project,product_supplierinfo,sale_order
