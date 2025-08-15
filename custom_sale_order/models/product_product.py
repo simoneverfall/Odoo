@@ -1,6 +1,5 @@
-from odoo import models, fields, api,_
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
-
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -11,18 +10,33 @@ class ProductTemplate(models.Model):
         default=30
     )
 
+    def _calculate_list_price(self, cost, margin):
+        """Helper to calculate sale price"""
+        if margin >= 100:
+            raise ValidationError(_('Margin cannot be equal to or greater than 100%.'))
+        denominator = 1 - (margin / 100)
+        return cost / denominator if denominator else 0
+
     @api.onchange('standard_price', 'margin_percent')
-    def _compute_sale_price(self):
-        if self.margin_percent > 100:
-            raise ValidationError(_('Margin cannot be equal to or greater than 100%. Please input a lower value.'))
+    def _onchange_margin_or_cost(self):
+        """Update price in UI"""
+        self.list_price = self._calculate_list_price(
+            self.standard_price or 0,
+            self.margin_percent or 0
+        )
 
-        for product in self:
-            if product.standard_price and product.margin_percent is not None:
-                denominator = 1 - (product.margin_percent / 100)
-                if denominator != 0:  # avoid division by zero
-                    product.list_price = product.standard_price / denominator
-                else:
-                    product.list_price = 0  # or set to cost, or raise ValidationError
-            else:
-                product.list_price = product.standard_price
+    def write(self, vals):
+        """Save updated price"""
+        if 'standard_price' in vals or 'margin_percent' in vals:
+            cost = vals.get('standard_price', self.standard_price)
+            margin = vals.get('margin_percent', self.margin_percent)
+            vals['list_price'] = self._calculate_list_price(cost, margin)
+        return super().write(vals)
 
+    @api.model
+    def create(self, vals):
+        """Save price when creating"""
+        cost = vals.get('standard_price', 0)
+        margin = vals.get('margin_percent', 30)
+        vals['list_price'] = self._calculate_list_price(cost, margin)
+        return super().create(vals)
