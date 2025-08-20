@@ -7,8 +7,12 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
-            <attribute name="context">{'show_address': 1}</attribute>
-        </xpath>
+                <attribute name="context">{'show_address': 1}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_invoice_id']" position="attributes">
+                <attribute name="string">Provider</attribute>
+
+            </xpath>
             <xpath expr="//field[@name='validity_date']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
@@ -18,10 +22,12 @@
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="replace">
                 <field name="partner_id"
-                       string="Provider"
-                       widget="res_partner_many2one"
-                       context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}"
-                       placeholder="Type to find a customer..." readonly="state in ['cancel', 'sale']"/>
+                       string="Case Manager"
+                       widget="many2one"
+                       context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True, 'only_name': True}"
+                       placeholder="Type to find a customer..."
+                       readonly="state in ['cancel', 'sale']"/>
+
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Client Photos">
@@ -38,7 +44,7 @@
         <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='amount_total']" position="after">
-                <field name="x_state_custom" widget="badge" decoration-info="x_state_custom == 'booked' or x_state_custom == 'approved'" decoration-warning="x_state_custom == 'hold'" decoration-primary="x_state_custom == 'awaiting_approval' or x_state_custom == 'to_quote_required'" decoration-danger="x_state_custom == 'cancelled'" decoration-success="x_state_custom == 'complete'"/>
+                <field name="x_state_custom" widget="badge" decoration-info="x_state_custom == 'booked' or x_state_custom == 'approved'" decoration-warning="x_state_custom == 'hold'" decoration-primary="x_state_custom == 'awaiting_approval' or x_state_custom == 'no_quote_required'" decoration-danger="x_state_custom == 'cancelled'" decoration-success="x_state_custom == 'complete'"/>
             </xpath>
             <xpath expr="//field[@name='validity_date']" position="replace">
             </xpath>
@@ -48,9 +54,11 @@
             <xpath expr="//field[@name='create_date']" position="after">
                 <field name="details" string="Address"/>
                 <field name="suburb"/>
-                <field name="provider_name"/>
+                <!--                <field name="provider_name"/>-->
             </xpath>
-            <xpath expr="//field[@name='partner_id']" position="replace">
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="context">{'only_company': True}</attribute>
+                <attribute name="string">Provider</attribute>
             </xpath>
         </field>
     </record>

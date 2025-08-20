@@ -25,18 +25,3 @@ class ProductTemplate(models.Model):
             self.margin_percent or 0
         )
 
-    def write(self, vals):
-        """Save updated price"""
-        if 'standard_price' in vals or 'margin_percent' in vals:
-            cost = vals.get('standard_price', self.standard_price)
-            margin = vals.get('margin_percent', self.margin_percent)
-            vals['list_price'] = self._calculate_list_price(cost, margin)
-        return super().write(vals)
-
-    @api.model
-    def create(self, vals):
-        """Save price when creating"""
-        cost = vals.get('standard_price', 0)
-        margin = vals.get('margin_percent', 30)
-        vals['list_price'] = self._calculate_list_price(cost, margin)
-        return super().create(vals)
