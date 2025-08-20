@@ -18,10 +18,9 @@
                     <li>Final Cost: <t t-esc="object.amount_total or 0.0"/></li>
                 </ul>
             </field>
-
         </record>
         <record id="email_template_sale_order_booked" model="mail.template">
-                <field name="name">Sales Order Booked Confirmation</field>
+            <field name="name">Sales Order Booked Confirmation</field>
             <field name="model_id" ref="sale.model_sale_order"/>
             <field name="subject">Order Booked - {{object.partner_id.name}}</field>
             <field name="email_from">{{(object.user_id.email or 'noreply@example.com')}}</field>
@@ -37,7 +36,6 @@
                     <li>Client Address: <t t-esc="object.partner_id.street"/> <t t-esc="object.partner_id.city"/> <t t-esc="object.partner_id.state_id.name"/> <t t-esc="object.partner_id.zip"/> <t t-esc="object.partner_id.country_id.name"/></li>
                 </ul>
             </field>
-
         </record>
     </data>
 </odoo>

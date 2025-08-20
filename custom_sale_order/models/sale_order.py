@@ -38,6 +38,15 @@ class SaleOrder(models.Model):
         readonly=True
     )
 
+    @api.model
+    def create(self, vals):
+        order = super().create(vals)
+        if vals.get("x_state_custom") == "booked":
+            order._send_booked_email()
+        if vals.get("x_state_custom") == "complete":
+            order._send_completion_email()
+        return order
+
     def write(self, vals):
         res = super().write(vals)
         if vals.get("x_state_custom") == "booked":
