@@ -15,7 +15,9 @@ class SaleOrder(models.Model):
         ('cancelled', 'Cancelled'),
         ('hold', 'Hold'),
         ('to_quote', 'To Quote'),
-        ('to_quote_required', 'To Quote Required'),
+        ('no_quote_required', 'No Quote Required'),
+        ('follow_up', 'Follow up'),
+        ('material_ord', 'Materials  Ordered'),
     ], string="Order Status")
     project_id = fields.Many2one('project.project',string="Project")
     client_photo_ids = fields.Many2many(
@@ -28,7 +30,7 @@ class SaleOrder(models.Model):
     )
     details = fields.Char(string="Details",related="partner_shipping_id.street")
     client_name = fields.Char(string="Suburb",related="partner_shipping_id.name")
-    provider_name = fields.Char(string="Provider",related="partner_id.name")
+    provider_name = fields.Char(string="Case Manager",related="partner_id.name")
     suburb = fields.Char(
         string="Suburb",
         related="partner_shipping_id.city",
@@ -36,14 +38,37 @@ class SaleOrder(models.Model):
         readonly=True
     )
 
-    # @api.model_create_multi
-    # def create(self, vals_list):
-    #     orders = super().create(vals_list)
-    #     for order in orders:
-    #         project = order._create_project_task_for_order()
-    #         order.project_id = project.id
-    #     return orders
-    #
+    @api.model
+    def create(self, vals):
+        order = super().create(vals)
+        if vals.get("x_state_custom") == "booked":
+            order._send_booked_email()
+        if vals.get("x_state_custom") == "complete":
+            order._send_completion_email()
+        return order
+
+    def write(self, vals):
+        res = super().write(vals)
+        if vals.get("x_state_custom") == "booked":
+            for order in self:
+                order._send_booked_email()
+        if vals.get("x_state_custom") == "complete":
+            for order in self:
+                order._send_completion_email()
+        return res
+
+    def _send_completion_email(self):
+        template = self.env.ref('custom_sale_order.email_template_sale_order_complete')
+        print('------?',template)
+        for order in self:
+            if order.partner_id.email:
+                template.send_mail(order.id, force_send=True)
+    def _send_booked_email(self):
+        template = self.env.ref('custom_sale_order.email_template_sale_order_booked')
+        for order in self:
+            if order.partner_id.email:
+                template.send_mail(order.id, force_send=True)
+
     def _create_project_task_for_order(self, note_text=None):
         partner = self.partner_shipping_id
         if partner:
@@ -93,4 +118,5 @@ class SaleOrder(models.Model):
                 order._create_project_task_for_order(note_text=note_text)
 
         return res
+
 
