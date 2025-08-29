@@ -13,3 +13,12 @@ class AccountMove(models.Model):
         string='Client Photos',
         domain=[('type', '=', 'binary')],
     )
+    details = fields.Char(string="Details", related="partner_shipping_id.street")
+    client_name = fields.Char(string="Suburb", related="partner_shipping_id.name")
+    provider_name = fields.Char(string="Case Manager", related="partner_id.name")
+    suburb = fields.Char(
+        string="Suburb",
+        related="partner_shipping_id.city",
+        store=True,  # Optional: store in DB if you need it in filters or views
+        readonly=True
+    )

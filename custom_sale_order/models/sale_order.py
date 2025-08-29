@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
 
 from odoo import _,api, fields, models
 from odoo.exceptions import UserError
@@ -20,6 +21,7 @@ class SaleOrder(models.Model):
         ('material_ord', 'Materials  Ordered'),
     ], string="Order Status")
     project_id = fields.Many2one('project.project',string="Project")
+    task_id = fields.Many2one('project.task',string="Task")
     client_photo_ids = fields.Many2many(
         'ir.attachment',
         'sale_order_attachment_rel',
@@ -83,12 +85,16 @@ class SaleOrder(models.Model):
             'sale_order_ref': self.id
         })
         self.project_id = project
-        # Create related task
-        self.env['project.task'].create({
+        task = self.env['project.task'].create({
             'name': client_details,
+            'sale_order_ref': self.id,
             'project_id': project.id,
             'description': note_text or '',
+            'planned_date_begin': fields.Datetime.now(),  # Start = now
+            'date_deadline': fields.Datetime.now() + timedelta(hours=8),  # Deadline = +8 hours
         })
+        self.task_id = task
+
 
 
     # Remove the note (terms and conditions) so it does not carry over to the invoice
@@ -119,4 +125,47 @@ class SaleOrder(models.Model):
 
         return res
 
+    def action_open_task_calendar(self):
+        """Open calendar view for the related task activities"""
+        return {
+            "type": "ir.actions.act_window",
+            "name": f"Calendar for {self.task_id.display_name}",
+            "res_model": "project.task",
+            "view_mode": "calendar,list,form",
+            "context": {
+                "search_default_project_id": self.project_id.id,  # filter by project
+                "initial_date": self.task_id.planned_date_begin,
+            },
+        }
+
+    def _find_mail_template(self):
+        """ Get the appropriate mail template for the current sales order based on its state.
+
+        If the SO is confirmed, we return the mail template for the sale confirmation.
+        Otherwise, we return the quotation email template.
+
+        :return: The correct mail template based on the current status
+        :rtype: record of `mail.template` or `None` if not found
+        """
+        self.ensure_one()
+        if self.env.context.get('proforma') or self.state != 'sale':
+            return self.env.ref('custom_sale_order.email_template_edi_salex', raise_if_not_found=False)
+        else:
+            return self._get_confirmation_template()
+
+    def _get_confirmation_template(self):
+        """ Get the mail template sent on SO confirmation (or for confirmed SO's).
+
+        :return: `mail.template` record or None if default template wasn't found
+        """
+        self.ensure_one()
+        default_confirmation_template_id = self.env['ir.config_parameter'].sudo().get_param(
+            'sale.default_confirmation_template'
+        )
+        default_confirmation_template = default_confirmation_template_id \
+            and self.env['mail.template'].browse(int(default_confirmation_template_id)).exists()
+        if default_confirmation_template:
+            return default_confirmation_template
+        else:
+            return self.env.ref('custom_sale_order.mail_template_sale_confirmation', raise_if_not_found=False)
 
