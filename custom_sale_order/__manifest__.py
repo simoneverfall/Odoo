@@ -10,6 +10,8 @@
         'views/account_move.xml',
         'views/product_product.xml',
         'views/project_project.xml',
+        'views/project_task.xml',
+        'data/custom_quotation_email_temp.xml'
     ],
     'installable': True,
     'license': 'LGPL-3',

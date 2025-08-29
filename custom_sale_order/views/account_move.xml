@@ -5,10 +5,29 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//label[@for='partner_id']" position="attributes">
+                <attribute name="string">Provider</attribute>
+            </xpath>
             <xpath expr="//notebook" position="inside">
-                <page string="Client Photos">
+                <page string="Client Photos">after
                     <field name="client_photo_ids" widget="many2many_binary" string="Attach a Photo"/>
-                </page>
+                </page>                <field name="partner_id"/>
+
+            </xpath>
+        </field>
+    </record>move
+    <record id="account_invoice_tree_inherited" model="ir.ui.view">
+        <field name="name">account.move.tree.inherited</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="client_name" string="Client Name"/>
+                <field name="details" string="Address"/>
+                <field name="suburb"/>
+            </xpath>
+            <xpath  expr="(//field[@name='invoice_partner_display_name'])[2]" position="replace">
+                <field name="partner_id" context="{'only_company': True}" string="Provider"/>
             </xpath>
         </field>
     </record>

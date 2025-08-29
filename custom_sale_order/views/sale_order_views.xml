@@ -39,7 +39,7 @@
 
     <!--    list View customizations -->
     <record id="sale_order_inherited_list_everfall" model="ir.ui.view">
-        <field name="name">sale.order.inherited.form.everfall</field>
+        <field name="name">sale.order.inherited.list.everfall</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
         <field name="arch" type="xml">
@@ -48,12 +48,24 @@
             </xpath>
             <xpath expr="//field[@name='validity_date']" position="replace">
             </xpath>
+<!--            <xpath expr="//field[@name='create_date']" position="before">-->
+<!--            </xpath>-->
+
+            <xpath expr="//field[@name='state']" position="after">
+<!--                <field name="task_id" />-->
+                     <button name="action_open_task_calendar"
+                        string="View Task📅"
+                    type="object"
+                    class="btn-link"
+                />
+            </xpath>
             <xpath expr="//field[@name='create_date']" position="before">
                 <field name="client_name" string="Client Name"/>
-            </xpath>
-            <xpath expr="//field[@name='create_date']" position="after">
                 <field name="details" string="Address"/>
                 <field name="suburb"/>
+
+<!--                attrs="{'invisible': [('task_id','=',False)]}"-->
+
                 <!--                <field name="provider_name"/>-->
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="attributes">
