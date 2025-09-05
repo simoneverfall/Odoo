@@ -11,6 +11,8 @@
         'views/product_product.xml',
         'views/project_project.xml',
         'views/project_task.xml',
+        'views/sale_report_inherit.xml',
+        'views/invoice_report_inherit.xml',
         'data/custom_quotation_email_temp.xml'
     ],
     'installable': True,
