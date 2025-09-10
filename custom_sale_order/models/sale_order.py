@@ -3,6 +3,8 @@ from datetime import timedelta
 
 from odoo import _,api, fields, models
 from odoo.exceptions import UserError, ValidationError
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class SaleOrder(models.Model):
@@ -173,8 +175,12 @@ class SaleAdvancePaymentInv(models.TransientModel):
 
     def create_invoices(self):
         template = self.env.ref('custom_sale_order.email_template_invoice_confirmation')
+        _logger.info(f"name of the template {template}")
         sale_orders = self.sale_order_ids
         for order in sale_orders:
+            _logger.info(f"sale order name  {order.name}")
             if order.partner_id.email:
+                _logger.info(f"sale order name  {order.partner_id.email}")
                 template.send_mail(order.id, force_send=True)
+                _logger.info(f"email sent ")
         return super(SaleAdvancePaymentInv, self).create_invoices()
