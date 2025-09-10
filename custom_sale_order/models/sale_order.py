@@ -2,7 +2,7 @@
 from datetime import timedelta
 
 from odoo import _,api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class SaleOrder(models.Model):
@@ -28,7 +28,7 @@ class SaleOrder(models.Model):
         'sale_order_id',
         'attachment_id',
         string='Client Photos',
-        domain=[('type', '=', 'binary')],
+        domain=[('mimetype', 'ilike', 'image/')],
     )
     details = fields.Char(string="Details",related="partner_shipping_id.street")
     client_name = fields.Char(string="Suburb",related="partner_shipping_id.name")
@@ -39,6 +39,13 @@ class SaleOrder(models.Model):
         store=True,  # Optional: store in DB if you need it in filters or views
         readonly=True
     )
+
+    @api.constrains('client_photo_ids')
+    def _check_client_photo_ids(self):
+        for order in self:
+            for attachment in order.client_photo_ids:
+                if not (attachment.mimetype or "").startswith("image/"):
+                    raise ValidationError(_("Only image files are allowed in Client Photos."))
 
     @api.model
     def create(self, vals):
@@ -159,13 +166,15 @@ class SaleOrder(models.Model):
         :return: `mail.template` record or None if default template wasn't found
         """
         self.ensure_one()
-        default_confirmation_template_id = self.env['ir.config_parameter'].sudo().get_param(
-            'sale.default_confirmation_template'
-        )
-        default_confirmation_template = default_confirmation_template_id \
-            and self.env['mail.template'].browse(int(default_confirmation_template_id)).exists()
-        if default_confirmation_template:
-            return default_confirmation_template
-        else:
-            return self.env.ref('custom_sale_order.mail_template_sale_confirmation', raise_if_not_found=False)
+        return self.env.ref('custom_sale_order.mail_template_sale_confirmation', raise_if_not_found=False)
 
+class SaleAdvancePaymentInv(models.TransientModel):
+    _inherit = 'sale.advance.payment.inv'
+
+    def create_invoices(self):
+        template = self.env.ref('custom_sale_order.email_template_invoice_confirmation')
+        sale_orders = self.sale_order_ids
+        for order in sale_orders:
+            if order.partner_id.email:
+                template.send_mail(order.id, force_send=True)
+        return super(SaleAdvancePaymentInv, self).create_invoices()
