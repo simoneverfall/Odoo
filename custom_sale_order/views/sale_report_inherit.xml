@@ -2,44 +2,19 @@
     <template id="report_saleorder_document_inherit_client_photos"
               inherit_id="sale.report_saleorder_document">
         <xpath expr="//div[@class='page']" position="after">
-            <t t-if="doc.client_photo_ids">
+                        <t t-if="doc.client_photo_ids">
                 <div style="margin-top:20px;">
-                    <div style="page-break-before: always;">
-                        <strong>Photos</strong>
-                        <table class="table table-borderless"
-                               style="margin-top:10px; width:100%; border-collapse: collapse; border: none;"
-                        >
-                            <thead style="border:none !important;">
-                            </thead>
-                            <t t-set="count" t-value="len(doc.client_photo_ids)"/>
-                            <tbody style="border:none !important;">
-                                <t t-foreach="range(0, count, 2)" t-as="i">
-                                    <tr>
-                                        <!-- first image -->
-                                        <td style="padding:5px; text-align:center; width:50%; border:none !important;">
-                                            <img t-att-src="'data:image/png;base64,%s' % doc.client_photo_ids[i].datas.decode()"
-                                                 style="max-width:300px; max-height:300px; border:none; padding:2px;"/>
-                                        </td>
-
-                                        <!-- second image if exists -->
-                                        <t t-if="i + 1 &lt; count">
-                                            <td style="padding:5px; text-align:center; width:50%; border:none !important;">
-                                                <img t-att-src="'data:image/png;base64,%s' % doc.client_photo_ids[i+1].datas.decode()"
-                                                     style="max-width:300px; max-height:300px; border:none; padding:2px;"/>
-                                            </td>
-                                        </t>
-
-                                        <!-- empty cell if no second image -->
-                                        <t t-if="i + 1 &gt;= count">
-                                            <td style="padding:5px; width:50%; border:none !important;"></td>
-                                        </t>
-                                    </tr>
-                                </t>
-                            </tbody>
-                        </table>
-                    </div>
+                    <t t-foreach="doc.client_photo_ids" t-as="client_photo" t-foreach-index="i">
+                        <div style="width:100%; height:800px; text-align:center; vertical-align:middle; page-break-before:always; border:none">
+                                <div style="vertical-align:middle; text-align:center;">
+                                    <img t-att-src="'data:image/png;base64,%s' % client_photo.datas.decode()"
+                                         style="max-width:850px; max-height:800px;"/>
+                                </div>
+                        </div>
+                    </t>
                 </div>
             </t>
+
         </xpath>
     </template>
 </odoo>
