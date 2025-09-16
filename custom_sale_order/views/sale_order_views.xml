@@ -6,16 +6,22 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
+
+            <!-- OLD LOGIC!!!! -->
+            <!-- <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
                 <attribute name="context">{'show_address': 1}</attribute>
                 <attribute name="string">Case Manager</attribute>
             </xpath>
 
             
             <xpath expr="//field[@name='partner_invoice_id']" position="attributes">
-                <attribute name="string">Provider</attribute>
+                <attribute name="string">Provider Invoice Address</attribute>
 
             </xpath>
+ -->
+
+            <!-- OLD LOGIC!!!! -->
+
             <xpath expr="//field[@name='validity_date']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
