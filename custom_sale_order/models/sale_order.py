@@ -32,15 +32,37 @@ class SaleOrder(models.Model):
         string='Client Photos',
         domain=[('mimetype', 'ilike', 'image/')],
     )
-    details = fields.Char(string="Details",related="partner_shipping_id.street")
-    client_name = fields.Char(string="Suburb",related="partner_shipping_id.name")
-    provider_name = fields.Char(string="Case Manager",related="partner_id.name")
+
+    # Partner Shipping (Is actually the client)
+    # Client needs to be partner_id
+    # Case manager is being shifted to Delivery Address Field.
+
+
+    # details = fields.Char(string="Details",related="partner_shipping_id.street")
+    details = fields.Char(string="Details",related="partner_id.street")
+
+    # client_name = fields.Char(string="Suburb",related="partner_shipping_id.name")
+    client_name = fields.Char(string="Suburb",related="partner_id.name")
+
+    # provider_name = fields.Char(string="Case Manager",related="partner_id.name")
+
+    # suburb = fields.Char(
+    #     string="Suburb",
+    #     related="partner_shipping_id.city",
+    #     store=True,  # Optional: store in DB if you need it in filters or views
+    #     readonly=True
+    # )
     suburb = fields.Char(
         string="Suburb",
-        related="partner_shipping_id.city",
+        related="partner_id.city",
         store=True,  # Optional: store in DB if you need it in filters or views
         readonly=True
     )
+
+    provider_id = fields.Many2one('res.partner')
+
+    case_manager_id = fields.Many2one('res.partner')
+
 
     @api.constrains('client_photo_ids')
     def _check_client_photo_ids(self):
@@ -169,6 +191,25 @@ class SaleOrder(models.Model):
         """
         self.ensure_one()
         return self.env.ref('custom_sale_order.mail_template_sale_confirmation', raise_if_not_found=False)
+    
+
+    def swap_partner_id_and_partner_shipping_id(self):
+        for record in self:
+            _logger.info('Swaping For %s has started', record.name)
+            partner_obj = record.partner_id
+            partner_shipping_obj = record.partner_shipping_id
+            partner_invoice_obj = record.partner_invoice_id
+            _logger.info('Before Swapped Partner_Id --> %s  Shipping Id --> %s', record.partner_id.display_name,record.partner_shipping_id.display_name)
+            record.sudo().write(
+                {
+                    'partner_id': partner_shipping_obj.id,
+                    'partner_shipping_id': partner_obj.id,
+                    'provider_id': partner_invoice_obj.id,
+                    'case_manager_id': partner_obj.id
+                }
+            )
+            _logger.info('Swapped Partner_Id --> %s  Shipping Id --> %s', record.partner_id.display_name,record.partner_shipping_id.display_name)
+
 
 class SaleAdvancePaymentInv(models.TransientModel):
     _inherit = 'sale.advance.payment.inv'

@@ -6,6 +6,7 @@
     'depends': ['sale','project','account','mail'],
     'data': [
         'data/mail_template.xml',
+        'data/server_action.xml',
         'views/sale_order_views.xml',
         'views/account_move.xml',
         'views/product_product.xml',

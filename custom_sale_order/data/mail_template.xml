@@ -1,20 +1,20 @@
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
         <record id="email_template_sale_order_complete" model="mail.template">
             <field name="name">Sales Order Completion Confirmation</field>
             <field name="model_id" ref="sale.model_sale_order"/>
             <field name="subject">Job Completed - {{object.partner_id.name}}</field>
             <field name="email_from">{{(object.user_id.email or 'noreply@example.com')}}</field>
-            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="partner_to">{{ object.case_manager_id.id }}</field>
             <field name="body_html" type="html">
-                <p>Dear <t t-esc="object.partner_id.name"/></p>
+                <p>Dear <t t-esc="object.case_manager_id.name"/></p>
                 <p>Your job <t t-esc="object.name"/> has been completed successfully. Here are the details:</p>
                 <ul>
                     <li>Date: <t t-esc="object.date_order.strftime('%Y-%m-%d')"/></li>
                     <li>Time: <t t-esc="object.write_date.strftime('%H:%M:%S')"/></li>
                     <li>Staff Member: <t t-esc="object.user_id.name"/></li>
-                    <li>Client Name <t t-esc="object.partner_shipping_id.name"/></li>
-                    <li>Client Address: <t t-esc="object.partner_shipping_id.street"/> <t t-esc="object.partner_id.city"/> <t t-esc="object.partner_id.state_id.name"/> <t t-esc="object.partner_id.zip"/> <t t-esc="object.partner_id.country_id.name"/></li>
+                    <li>Client Name <t t-esc="object.partner_id.name"/></li>
+                    <li>Client Address: <t t-esc="object.partner_id.street"/> <t t-esc="object.partner_id.city"/> <t t-esc="object.partner_id.state_id.name"/> <t t-esc="object.partner_id.zip"/> <t t-esc="object.partner_id.country_id.name"/></li>
                     <li>Final Cost: <t t-esc="object.amount_total or 0.0"/></li>
                 </ul>
             </field>
@@ -24,15 +24,15 @@
             <field name="model_id" ref="sale.model_sale_order"/>
             <field name="subject">Order Booked - {{object.partner_id.name}}</field>
             <field name="email_from">{{(object.user_id.email or 'noreply@example.com')}}</field>
-            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="partner_to">{{ object.case_manager_id.id }}</field>
             <field name="body_html" type="html">
-                <p>Dear <t t-esc="object.partner_id.name"/></p>
+                <p>Dear <t t-esc="object.case_manager_id.name"/></p>
                 <p>Your order <t t-esc="object.name"/> has been Booked successfully. Here are the details:</p>
                 <ul>
                     <li>Date: <t t-esc="object.date_order.strftime('%Y-%m-%d')"/></li>
                     <li>Time: <t t-esc="object.write_date.strftime('%H:%M:%S')"/></li>
                     <li>Staff Member: <t t-esc="object.user_id.name"/></li>
-                    <li>Client Name <t t-esc="object.partner_shipping_id.name"/></li>
+                    <li>Client Name <t t-esc="object.partner_id.name"/></li>
                     <li>Client Address: <t t-esc="object.partner_id.street"/> <t t-esc="object.partner_id.city"/> <t t-esc="object.partner_id.state_id.name"/> <t t-esc="object.partner_id.zip"/> <t t-esc="object.partner_id.country_id.name"/></li>
                 </ul>
             </field>
@@ -42,15 +42,15 @@
             <field name="model_id" ref="sale.model_sale_order"/>
             <field name="subject">Order Invoice - {{object.partner_id.name}}</field>
             <field name="email_from">{{(object.user_id.email or 'noreply@example.com')}}</field>
-            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="partner_to">{{ object.case_manager_id.id }}</field>
             <field name="body_html" type="html">
-                <p>Dear <t t-esc="object.partner_id.name"/></p>
+                <p>Dear <t t-esc="object.case_manager_id.name"/></p>
                 <p>Your order <t t-esc="object.name"/> has been invoiced. Here are the details:</p>
                 <ul>
                     <li>Date: <t t-esc="object.date_order.strftime('%Y-%m-%d')"/></li>
                     <li>Time: <t t-esc="object.write_date.strftime('%H:%M:%S')"/></li>
                     <li>Staff Member: <t t-esc="object.user_id.name"/></li>
-                    <li>Client Name: <t t-esc="object.partner_shipping_id.name"/></li>
+                    <li>Client Name: <t t-esc="object.partner_id.name"/></li>
                     <li>Client Address: <t t-esc="object.partner_id.street"/> <t t-esc="object.partner_id.city"/> <t t-esc="object.partner_id.state_id.name"/> <t t-esc="object.partner_id.zip"/> <t t-esc="object.partner_id.country_id.name"/></li>
                 </ul>
             </field>
