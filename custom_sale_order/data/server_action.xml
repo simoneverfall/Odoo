@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="swap_case_manager_delivery_address_client_action_server" model="ir.actions.server">
+        <field name="name">Swap Case Manager and Delivery Address</field>
+        <field name="model_id" ref="model_sale_order"/>
+        <field name="binding_model_id" ref="model_sale_order"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+            action = records.swap_partner_id_and_partner_shipping_id()
+        </field>
+    </record>
+
+</odoo>
