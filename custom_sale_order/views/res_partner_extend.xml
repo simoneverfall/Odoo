@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="custom_sale_order_res_partner_form_inherit" model="ir.ui.view">
+        <field name="name">custom_sale_order_res_partner_form_inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                    <button class="oe_stat_button" type="object"
+                            name="action_partner_send_mail"
+                            icon="fa-paper-plane-o">
+                            <field string="Send Mails" name="sent_mails_count" widget="statinfo"/>
+                    </button>
+                    <button class="oe_stat_button" type="object"
+                            name="action_partner_received_mail"
+                            icon="fa-envelope">
+                            <field string="Received Mails" name="received_mails_count" widget="statinfo"/>
+                    </button>
+                </div>
+        </field>
+    </record>
+
+</odoo>

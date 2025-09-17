@@ -5,6 +5,10 @@ from odoo import _,api, fields, models
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
+    sent_mails_count = fields.Integer(compute="_compute_sent_mails_count")
+
+    received_mails_count = fields.Integer(compute="_compute_received_mails_count")
+
     def _compute_display_name(self):
         if self.env.context.get("only_name"):
 
@@ -30,3 +34,27 @@ class ResPartner(models.Model):
                 partner.display_name = name.strip()
         else:
             super()._compute_display_name()
+
+    
+    def _compute_sent_mails_count(self):
+        self.ensure_one()
+        self.sent_mails_count = self.env['mail.message'].sudo().search_count([('partner_ids', 'in', self.ids)])
+
+    def _compute_received_mails_count(self):
+        self.ensure_one()
+        self.received_mails_count = self.env['mail.message'].sudo().search_count([('author_id', 'in', self.ids)])
+        
+
+    # For Smart Button Logic
+
+    def action_partner_received_mail(self):
+        self.ensure_one()
+        action = self.env.ref('mail.action_view_mail_message').read()[0]
+        action['domain'] = [('author_id', 'in', self.ids)]
+        return action
+    
+    def action_partner_send_mail(self):
+        self.ensure_one()
+        action = self.env.ref('mail.action_view_mail_message').read()[0]
+        action['domain'] = [('partner_ids', 'in', self.ids)]
+        return action
