@@ -210,6 +210,15 @@ class SaleOrder(models.Model):
             )
             _logger.info('Swapped Partner_Id --> %s  Shipping Id --> %s', record.partner_id.display_name,record.partner_shipping_id.display_name)
     
+    def set_shipping_id(self):
+        for record in self:
+            partner_obj = record.partner_id
+            record.sudo().write(
+                {
+                    'partner_shipping_id':partner_obj.id
+                }
+            )
+    
         # INVOICING #
         # To Create invoice for the Provider Field
     def _prepare_invoice(self):

@@ -10,13 +10,11 @@
             <!-- OLD LOGIC!!!! -->
             <!-- <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
                 <attribute name="context">{'show_address': 1}</attribute>
-                <attribute name="string">Case Manager</attribute>
             </xpath>
 
             
             <xpath expr="//field[@name='partner_invoice_id']" position="attributes">
-                <attribute name="string">Provider Invoice Address</attribute>
-
+                <attribute name="string">Provider</attribute>
             </xpath>
  -->
 
@@ -48,6 +46,17 @@
                        readonly="state in ['cancel', 'sale']"/>
 
             </xpath>
+
+            <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            
+            <xpath expr="//field[@name='partner_invoice_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            
             <xpath expr="//notebook" position="inside">
                 <page string="Client Photos">
                     <field name="client_photo_ids" widget="many2many_binary" string="Attach a Photo"/>
