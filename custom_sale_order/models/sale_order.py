@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 
-from odoo import _,api, fields, models, Command, _
+from odoo import _,api, fields, models, Command
 from odoo.exceptions import UserError, ValidationError
 import logging
 _logger = logging.getLogger(__name__)
@@ -87,20 +87,51 @@ class SaleOrder(models.Model):
                 order._send_booked_email()
         if vals.get("x_state_custom") == "complete":
             for order in self:
-                order._send_completion_email()
+                order.with_context(
+                completion_email=True
+            )._send_completion_email()
         return res
 
     def _send_completion_email(self):
         template = self.env.ref('custom_sale_order.email_template_sale_order_complete')
-        print('------?',template)
         for order in self:
-            if order.partner_id.email:
-                template.send_mail(order.id, force_send=True)
+            if not order.case_manager_id:
+                raise UserError(_('Kindly Select a Case Manager!'))
+            if order.case_manager_id.email:
+                mail = template.send_mail(order.id, force_send=True)
+
+                # Get the created mail.message
+                mail_message = self.env['mail.mail'].browse(mail).mail_message_id
+
+                self.case_manager_id.message_post(
+                    body=mail_message.body,
+                    subject=mail_message.subject,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
+            else:
+                raise UserError(_('Case Manager Do not have an email address.!'))
+            
     def _send_booked_email(self):
         template = self.env.ref('custom_sale_order.email_template_sale_order_booked')
         for order in self:
-            if order.partner_id.email:
-                template.send_mail(order.id, force_send=True)
+            if not order.case_manager_id:
+                raise UserError(_('Kindly Select a Case Manager!'))
+            if order.case_manager_id.email:
+                mail = template.send_mail(order.id, force_send=True)
+
+                 # Get the created mail.message
+                mail_message = self.env['mail.mail'].browse(mail).mail_message_id
+
+                self.case_manager_id.message_post(
+                    body=mail_message.body,
+                    subject=mail_message.subject,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
+
+            else:
+                raise UserError(_('Case Manager Do not have an email address.!'))
 
     def _create_project_task_for_order(self, note_text=None):
         partner = self.partner_shipping_id
@@ -260,6 +291,26 @@ class SaleOrder(models.Model):
         if self.journal_id:
             values['journal_id'] = self.journal_id.id
         return values
+    
+
+    @api.returns('mail.message', lambda value: value.id)
+    def message_post(self, **kwargs):
+        if self.env.context.get('mark_so_as_sent'):
+            # Send mail to partner too
+            if self.partner_id:
+                self.partner_id.message_post(
+                    body=kwargs['body'],
+                    subject=kwargs['subject'],
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
+            self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
+        so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
+        if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
+            kwargs['notify_author'] = self.env.user.partner_id.id in (kwargs.get('partner_ids') or [])
+        
+        
+        return super(SaleOrder, self.with_context(**so_ctx)).message_post(**kwargs)
 
 
 class SaleAdvancePaymentInv(models.TransientModel):
@@ -271,8 +322,23 @@ class SaleAdvancePaymentInv(models.TransientModel):
         sale_orders = self.sale_order_ids
         for order in sale_orders:
             _logger.info(f"sale order name  {order.name}")
-            if order.partner_id.email:
+            if not order.case_manager_id:
+                raise UserError(_('Kindly Select a Case Manager!'))
+            if order.case_manager_id.email:
                 _logger.info(f"sale order name  {order.partner_id.email}")
-                template.send_mail(order.id, force_send=True)
+                mail = template.send_mail(order.id, force_send=True)
+
+                 # Get the created mail.message
+                mail_message = self.env['mail.mail'].browse(mail).mail_message_id
+
+                self.case_manager_id.message_post(
+                    body=mail_message.body,
+                    subject=mail_message.subject,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
+            else:
+                raise UserError(_('Case Manager Do not have an email address.!'))
+
                 _logger.info(f"email sent ")
         return super(SaleAdvancePaymentInv, self).create_invoices()

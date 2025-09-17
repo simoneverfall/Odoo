@@ -6,6 +6,7 @@
             <field name="subject">Job Completed - {{object.partner_id.name}}</field>
             <field name="email_from">{{(object.user_id.email or 'noreply@example.com')}}</field>
             <field name="partner_to">{{ object.case_manager_id.id }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="body_html" type="html">
                 <p>Dear <t t-esc="object.case_manager_id.name"/></p>
                 <p>Your job <t t-esc="object.name"/> has been completed successfully. Here are the details:</p>
@@ -25,6 +26,7 @@
             <field name="subject">Order Booked - {{object.partner_id.name}}</field>
             <field name="email_from">{{(object.user_id.email or 'noreply@example.com')}}</field>
             <field name="partner_to">{{ object.case_manager_id.id }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="body_html" type="html">
                 <p>Dear <t t-esc="object.case_manager_id.name"/></p>
                 <p>Your order <t t-esc="object.name"/> has been Booked successfully. Here are the details:</p>
@@ -43,6 +45,7 @@
             <field name="subject">Order Invoice - {{object.partner_id.name}}</field>
             <field name="email_from">{{(object.user_id.email or 'noreply@example.com')}}</field>
             <field name="partner_to">{{ object.case_manager_id.id }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="body_html" type="html">
                 <p>Dear <t t-esc="object.case_manager_id.name"/></p>
                 <p>Your order <t t-esc="object.name"/> has been invoiced. Here are the details:</p>
