@@ -127,4 +127,50 @@
              <!-- New Logic -->
         </field>
     </record>
+
+    <record id="sale_order_custom_search_view" model="ir.ui.view">
+        <field name="name">sale.order.custom.search.view</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="client_name" string="Client Name"/>
+                <field name="details" string="Address"/>
+
+                <filter string="WIP" name="wip" domain="[('state', '!=', 'cancel'),('x_state_custom', 'not in', ('complete','hold','cancelled'))]"/>
+                <separator/>
+                <filter string="My Quotations" name="my_quotation" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Quotations" name="draft" domain="[('state', 'in', ('draft', 'sent'))]"/>
+                <filter string="Sales Orders" name="sales" domain="[('state', '=', 'sale')]"/>
+                <separator/>
+                <filter string="Complete" name="complete" domain="[('x_state_custom', '=', 'complete')]"/>
+                <filter string="Approved" name="approved" domain="[('x_state_custom', '=', 'approved')]"/>
+                <filter string="Awaiting Approval" name="awaiting_approval" domain="[('x_state_custom', '=', 'awaiting_approval')]"/>
+                <filter string="Booked" name="booked" domain="[('x_state_custom', '=', 'booked')]"/>
+                <filter string="Cancelled" name="cancelled" domain="[('x_state_custom', '=', 'cancelled')]"/>
+                <filter string="Hold" name="hold" domain="[('x_state_custom', '=', 'hold')]"/>
+                <separator/>
+                <filter string="Create Date" name="filter_create_date" date="create_date"/>
+                <filter string="My Orders" domain="[('user_id', '=', uid)]" name="my_sale_orders_filter"/>
+                <filter invisible="1" string="Late Activities" name="activities_overdue"
+                    domain="[('my_activity_date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]"
+                    help="Show all records which has next action date is before today"/>
+                <filter invisible="1" string="Today Activities" name="activities_today"
+                    domain="[('my_activity_date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter invisible="1" string="Future Activities" name="activities_upcoming_all"
+                    domain="[('my_activity_date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Salesperson" name="salesperson" domain="[]" context="{'group_by': 'user_id'}"/>
+                    <filter name="customer" string="Customer" domain="[]" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Order Date" name="order_month" domain="[]" context="{'group_by': 'date_order'}"/>
+                    <filter string="Suburb" name="suburb" domain="[]" context="{'group_by': 'suburb'}"/>
+                </group>
+
+            </search>
+        </field>
+    </record>
+
+    <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
+        <field name="search_view_id" ref="custom_sale_order.sale_order_custom_search_view"/>
+    </record>
 </odoo>
