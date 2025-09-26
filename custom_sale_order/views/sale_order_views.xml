@@ -173,4 +173,7 @@
     <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
         <field name="search_view_id" ref="custom_sale_order.sale_order_custom_search_view"/>
     </record>
+    <record id="sale.action_orders" model="ir.actions.act_window">
+        <field name="search_view_id" ref="custom_sale_order.sale_order_custom_search_view"/>
+    </record>
 </odoo>
