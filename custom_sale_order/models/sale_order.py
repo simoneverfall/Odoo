@@ -39,10 +39,11 @@ class SaleOrder(models.Model):
 
 
     # details = fields.Char(string="Details",related="partner_shipping_id.street")
-    details = fields.Char(string="Details",related="partner_id.street")
+    # details = fields.Char(string="Details",related="partner_id.street")
+    details = fields.Char(string="Details",related="client_id.street")
 
     # client_name = fields.Char(string="Suburb",related="partner_shipping_id.name")
-    client_name = fields.Char(string="Suburb",related="partner_id.name")
+    client_name = fields.Char(string="Suburb",related="client_id.name")
 
     # provider_name = fields.Char(string="Case Manager",related="partner_id.name")
 
@@ -52,9 +53,15 @@ class SaleOrder(models.Model):
     #     store=True,  # Optional: store in DB if you need it in filters or views
     #     readonly=True
     # )
+    # suburb = fields.Char(
+    #     string="Suburb",
+    #     related="partner_id.city",
+    #     store=True,  # Optional: store in DB if you need it in filters or views
+    #     readonly=True
+    # )
     suburb = fields.Char(
         string="Suburb",
-        related="partner_id.city",
+        related="client_id.city",
         store=True,  # Optional: store in DB if you need it in filters or views
         readonly=True
     )
@@ -62,6 +69,9 @@ class SaleOrder(models.Model):
     provider_id = fields.Many2one('res.partner')
 
     case_manager_id = fields.Many2one('res.partner')
+
+    # DUE TO ODOO EMAILS AND FLOW PARTNER ID IS GOING TO BE case manager id and client must be set as a seperate field.
+    client_id = fields.Many2one('res.partner')
 
 
     @api.constrains('client_photo_ids')
@@ -95,15 +105,21 @@ class SaleOrder(models.Model):
     def _send_completion_email(self):
         template = self.env.ref('custom_sale_order.email_template_sale_order_complete')
         for order in self:
-            if not order.case_manager_id:
+            if not order.partner_id:
                 raise UserError(_('Kindly Select a Case Manager!'))
-            if order.case_manager_id.email:
+            if order.partner_id.email:
                 mail = template.send_mail(order.id, force_send=True)
 
                 # Get the created mail.message
                 mail_message = self.env['mail.mail'].browse(mail).mail_message_id
 
-                self.case_manager_id.message_post(
+                self.partner_id.message_post(
+                    body=mail_message.body,
+                    subject=mail_message.subject,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
+                self.client_id.message_post(
                     body=mail_message.body,
                     subject=mail_message.subject,
                     message_type='comment',
@@ -115,15 +131,21 @@ class SaleOrder(models.Model):
     def _send_booked_email(self):
         template = self.env.ref('custom_sale_order.email_template_sale_order_booked')
         for order in self:
-            if not order.case_manager_id:
+            if not order.partner_id:
                 raise UserError(_('Kindly Select a Case Manager!'))
-            if order.case_manager_id.email:
+            if order.partner_id.email:
                 mail = template.send_mail(order.id, force_send=True)
 
                  # Get the created mail.message
                 mail_message = self.env['mail.mail'].browse(mail).mail_message_id
 
-                self.case_manager_id.message_post(
+                self.partner_id.message_post(
+                    body=mail_message.body,
+                    subject=mail_message.subject,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
+                self.client_id.message_post(
                     body=mail_message.body,
                     subject=mail_message.subject,
                     message_type='comment',
@@ -134,7 +156,8 @@ class SaleOrder(models.Model):
                 raise UserError(_('Case Manager Do not have an email address.!'))
 
     def _create_project_task_for_order(self, note_text=None):
-        partner = self.partner_shipping_id
+        # partner = self.partner_shipping_id
+        partner = self.client_id
         if partner:
             client_parts = [partner.name, partner.street, partner.city, partner.phone]
             client_details = ", ".join([part for part in client_parts if part])
@@ -250,6 +273,18 @@ class SaleOrder(models.Model):
                 }
             )
     
+    def fix_fields(self):
+        # Swaps Partner and Case Manager
+        for record in self:
+            partner_id_obj = record.partner_id  # Currently the client.
+            case_manager_obj = record.case_manager_id
+
+            record.sudo().write({
+                'partner_id': case_manager_obj.id,
+                'client_id': partner_id_obj.id
+            }
+            )
+    
         # INVOICING #
         # To Create invoice for the Provider Field
     def _prepare_invoice(self):
@@ -277,7 +312,7 @@ class SaleOrder(models.Model):
             'source_id': self.source_id.id,
             'team_id': self.team_id.id,
             'partner_id': self.provider_id.id,
-            'partner_shipping_id': self.partner_shipping_id.id,
+            'partner_shipping_id': self.client_id.id,
             'fiscal_position_id': (self.fiscal_position_id or self.fiscal_position_id._get_fiscal_position(self.provider_id)).id,
             'invoice_origin': self.name,
             'invoice_payment_term_id': self.payment_term_id.id,
@@ -304,6 +339,13 @@ class SaleOrder(models.Model):
                     message_type='comment',
                     subtype_xmlid='mail.mt_comment'
                 )
+            if self.client_id:
+                self.client_id.message_post(
+                    body=kwargs['body'],
+                    subject=kwargs['subject'],
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
             self.filtered(lambda o: o.state == 'draft').with_context(tracking_disable=True).write({'state': 'sent'})
         so_ctx = {'mail_post_autofollow': self.env.context.get('mail_post_autofollow', True)}
         if self.env.context.get('mark_so_as_sent') and 'mail_notify_author' not in kwargs:
@@ -322,16 +364,22 @@ class SaleAdvancePaymentInv(models.TransientModel):
         sale_orders = self.sale_order_ids
         for order in sale_orders:
             _logger.info(f"sale order name  {order.name}")
-            if not order.case_manager_id:
+            if not order.partner_id:
                 raise UserError(_('Kindly Select a Case Manager!'))
-            if order.case_manager_id.email:
+            if order.partner_id.email:
                 _logger.info(f"sale order name  {order.partner_id.email}")
                 mail = template.send_mail(order.id, force_send=True)
 
                  # Get the created mail.message
                 mail_message = self.env['mail.mail'].browse(mail).mail_message_id
 
-                self.case_manager_id.message_post(
+                order.partner_id.message_post(
+                    body=mail_message.body,
+                    subject=mail_message.subject,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
+                order.client_id.message_post(
                     body=mail_message.body,
                     subject=mail_message.subject,
                     message_type='comment',

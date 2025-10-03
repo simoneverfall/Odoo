@@ -36,10 +36,11 @@
                        context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True, 'only_name': True}"
                        placeholder="Type to find a customer..."
                        readonly="state in ['cancel', 'sale']"/> -->
-            <!-- Now Making This As Client Delivery Address -->
+            <!-- Now Making This As Client Delivery Address CHANGED!!!!!-->
+            <!-- IT MUST BE CASE MANAGER-->
             <xpath expr="//field[@name='partner_id']" position="replace">
                 <field name="partner_id"
-                       string="Delivery Address"
+                       string="Case Manager"
                        widget="many2one"
                        context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True, 'only_name': True}"
                        placeholder="Type to find a customer..."
@@ -64,7 +65,8 @@
             </xpath>
 
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="provider_id" />
+                <field name="client_id" string="Delivery Address" options="{'no_create':1}" context="{'show_address': 1}" readonly="state in ('sale','cancel')"/>
+                <field name="provider_id" readonly="invoice_status != 'to invoice'"/>
                 <field name="case_manager_id" readonly="state == 'cancel' or locked" context="{'show_address': 1}"/>
             </xpath>
         </field>
@@ -108,9 +110,14 @@
             </xpath> -->
 
             <!-- new logic -->
-            <xpath expr="//field[@name='partner_id']" position="attributes">
+            <!-- <xpath expr="//field[@name='partner_id']" position="attributes">
                 <attribute name="optional">hide</attribute>
                 <attribute name="string">Client Company</attribute>
+            </xpath> -->
+
+            <!-- fixed as partner_id is case manager!!! -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="string">Case Manager</attribute>
             </xpath>
 
             <!-- OLD Logic -->
