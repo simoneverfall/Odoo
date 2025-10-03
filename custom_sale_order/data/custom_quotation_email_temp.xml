@@ -4,9 +4,10 @@
         <record id="email_template_edi_salex" model="mail.template">
             <field name="name">Sales: Send Quotation</field>
             <field name="model_id" ref="sale.model_sale_order"/>
-            <field name="subject"> EVERFALL - {{ object.name or 'n/a' }} {{ object.partner_shipping_id.name and  ' - '  + object.partner_shipping_id.name or '' }} {{ object.partner_shipping_id.street and ' - ' + object.partner_shipping_id.street or '' }} {{ object.partner_shipping_id.street2 and ' - ' + object.partner_shipping_id.street2 or '' }} {{ object.partner_shipping_id.zip and ' ' + object.partner_shipping_id.zip or '' }}</field>
+            <field name="subject"> EVERFALL - {{ object.name or 'n/a' }} {{ object.client_id.name and  ' - '  + object.client_id.name or '' }} {{ object.client_id.street and ' - ' + object.client_id.street or '' }} {{ object.client_id.street2 and ' - ' + object.client_id.street2 or '' }} {{ object.client_id.zip and ' ' + object.client_id.zip or '' }}</field>
             <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
-            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <!-- <field name="partner_to">{{ object.partner_id.id }}</field> -->
+            <field name="email_to">{{ object.partner_id.email_formatted }}</field>
             <field name="description">Used by salespeople when they send quotations or proforma to prospects</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
@@ -66,9 +67,10 @@
         <record id="mail_template_sale_confirmation" model="mail.template">
             <field name="name">Sales: Order Confirmation</field>
             <field name="model_id" ref="sale.model_sale_order"/>
-            <field name="subject"> EVERFALL - {{ object.name or 'n/a' }} {{ object.partner_shipping_id.name and  ' - '  + object.partner_shipping_id.name or '' }} {{ object.partner_shipping_id.street and ' - ' + object.partner_shipping_id.street or '' }} {{ object.partner_shipping_id.street2 and ' - ' + object.partner_shipping_id.street2 or '' }} {{ object.partner_shipping_id.zip and ' ' + object.partner_shipping_id.zip or '' }}</field>
+            <field name="subject"> EVERFALL - {{ object.name or 'n/a' }} {{ object.client_id.name and  ' - '  + object.client_id.name or '' }} {{ object.client_id.street and ' - ' + object.client_id.street or '' }} {{ object.client_id.street2 and ' - ' + object.client_id.street2 or '' }} {{ object.client_id.zip and ' ' + object.client_id.zip or '' }}</field>
             <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
-            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <!-- <field name="partner_to">{{ object.partner_id.id }}</field> -->
+            <field name="email_to">{{ object.partner_id.email_formatted }}</field>
             <field name="description">Sent to customers on order confirmation</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
@@ -277,17 +279,17 @@
                                 </tr>
                             </table>
                         </div>
-                        <div t-if="object.partner_shipping_id and not object.only_services" style="margin: 0px; padding: 0px;">
+                        <div t-if="object.client_id and not object.only_services" style="margin: 0px; padding: 0px;">
                             <table width="100%" style="color: #454748; font-size: 12px;">
                                 <tr>
                                     <td>
                                         <br/>
                                         <span style="font-weight:bold;">Ship to:</span>
-                                        <t t-out="object.partner_shipping_id.street or ''">1201 S Figueroa St</t>
-                                        <t t-out="object.partner_shipping_id.city or ''">Los Angeles</t>
-                                        <t t-out="object.partner_shipping_id.state_id.name or ''">California</t>
-                                        <t t-out="object.partner_shipping_id.zip or ''">90015</t>
-                                        <t t-out="object.partner_shipping_id.country_id.name or ''">United States</t>
+                                        <t t-out="object.client_id.street or ''">1201 S Figueroa St</t>
+                                        <t t-out="object.client_id.city or ''">Los Angeles</t>
+                                        <t t-out="object.client_id.state_id.name or ''">California</t>
+                                        <t t-out="object.client_id.zip or ''">90015</t>
+                                        <t t-out="object.client_id.country_id.name or ''">United States</t>
                                     </td>
                                 </tr>
                             </table>

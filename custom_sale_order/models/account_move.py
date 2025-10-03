@@ -15,7 +15,7 @@ class AccountMove(models.Model):
     )
     details = fields.Char(string="Details", related="partner_shipping_id.street")
     client_name = fields.Char(string="Suburb", related="partner_shipping_id.name")
-    provider_name = fields.Char(string="Case Manager", related="partner_id.name")
+    provider_name = fields.Char(string="Provider Name", related="partner_id.name")
     suburb = fields.Char(
         string="Suburb",
         related="partner_shipping_id.city",

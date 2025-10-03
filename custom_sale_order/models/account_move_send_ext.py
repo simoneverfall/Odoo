@@ -25,13 +25,20 @@ class AccountMoveSend(models.AbstractModel):
                     'reply_to_force_new': False,
                 }
             )
-
-        move.partner_id.message_post(
-            body=new_message.body,
-            subject=new_message.subject,
-            message_type='comment',
-            subtype_xmlid='mail.mt_comment'
-        )
+        if move.partner_id:
+            move.partner_id.message_post(
+                body=new_message.body,
+                subject=new_message.subject,
+                message_type='comment',
+                subtype_xmlid='mail.mt_comment'
+            )
+        if move.partner_shipping_id:
+            move.partner_shipping_id.message_post(
+                body=new_message.body,
+                subject=new_message.subject,
+                message_type='comment',
+                subtype_xmlid='mail.mt_comment'
+            )
 
         # new_message_for_partner = move.partner_id\
         #     .with_context(
