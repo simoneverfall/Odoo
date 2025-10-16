@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
-
+from markupsafe import Markup       
 from odoo import _,api, fields, models, Command
 from odoo.exceptions import UserError, ValidationError
 import logging
@@ -72,6 +72,27 @@ class SaleOrder(models.Model):
 
     # DUE TO ODOO EMAILS AND FLOW PARTNER ID IS GOING TO BE case manager id and client must be set as a seperate field.
     client_id = fields.Many2one('res.partner')
+
+    custom_project_count = fields.Integer(compute="_compute_custom_project_count", store=True)
+
+    custom_task_count = fields.Integer(compute="_compute_custom_task_count", store=True)
+
+
+    @api.depends('project_id')
+    def _compute_custom_project_count(self):
+        for record in self:
+            if record.project_id:
+                record.custom_project_count = 1
+            else:
+                record.custom_project_count = 0
+    
+    @api.depends('task_id')
+    def _compute_custom_task_count(self):
+        for record in self:
+            if record.task_id:
+                record.custom_task_count = 1
+            else:
+                record.custom_task_count = 0
 
 
     @api.constrains('client_photo_ids')
@@ -165,18 +186,43 @@ class SaleOrder(models.Model):
             client_details = ''
 
         # Create Project with note as description if provided
+
+        tasktypes = self.env['project.task.type'].sudo().search([('is_custom_task_type','=',True)])
+
+        html_paragraph = Markup(
+            "<p>"
+            "Project for Sale Order: <strong>{sale_order}</strong>.<br/>"
+            "Client Name: <strong>{client_name}</strong>.<br/>"
+            "Provider Name: <strong>{provider_name}</strong><br/>"
+            "Case Manager Name: <strong>{casemanager_name}</strong><br/>"
+            "<strong>Note:</strong><br/>"
+            "To Open The Task, of this project use the above smart button named -> <strong>Tasks</strong>."
+            "</p>"
+        ).format(sale_order=self.display_name, client_name=self.client_id.name, provider_name=self.provider_id.name, casemanager_name=self.partner_id.name)
+
         project = self.env['project.project'].create({
             'name': f"Project {self.name}",
-            'sale_order_ref': self.id
+            'partner_id':self.client_id.id,
+            'sale_order_ref': self.id,
+            'is_fsm':True,
+            'company_id': self.env.company.id,
+            'type_ids': [Command.link(tasktype.id) for tasktype in tasktypes],
+            'date_start': fields.Datetime.now(),
+            'date': fields.Datetime.now() + timedelta(hours=8),  # Start = now,
+            'description':html_paragraph,
         })
+
+        # <field name="type_ids" eval="[(4, ref('planning_project_stage_0')), (4, ref('planning_project_stage_1')), (4, ref('planning_project_stage_2')), (4, ref('planning_project_stage_3')), (4, ref('planning_project_stage_4'))]"/>
         self.project_id = project
         task = self.env['project.task'].create({
             'name': client_details,
+            'partner_id': self.client_id.id,
             'sale_order_ref': self.id,
             'project_id': project.id,
-            'description': note_text or '',
+            'sale_description': note_text or '',
             'planned_date_begin': fields.Datetime.now(),  # Start = now
             'date_deadline': fields.Datetime.now() + timedelta(hours=8),  # Deadline = +8 hours
+            'provider_id':self.provider_id.id,
         })
         self.task_id = task
 
@@ -221,6 +267,16 @@ class SaleOrder(models.Model):
                 "search_default_project_id": self.project_id.id,  # filter by project
                 "initial_date": self.task_id.planned_date_begin,
             },
+        }
+    
+    def action_open_project(self):
+        """Open project view"""
+        return {
+            "type": "ir.actions.act_window",
+            "name": f"Project for {self.display_name}",
+            "res_model": "project.project",
+            "res_id": self.project_id.id,
+            "view_mode": "form",
         }
 
     def _find_mail_template(self):
@@ -390,3 +446,102 @@ class SaleAdvancePaymentInv(models.TransientModel):
 
                 _logger.info(f"email sent ")
         return super(SaleAdvancePaymentInv, self).create_invoices()
+
+class SaleOrderLine(models.Model):
+    _inherit = "sale.order.line"
+
+    def _timesheet_service_generation(self):
+        """ For service lines, create the task or the project. If already exists, it simply links
+            the existing one to the line.
+            Note: If the SO was confirmed, cancelled, set to draft then confirmed, avoid creating a
+            new project/task. This explains the searches on 'sale_line_id' on project/task. This also
+            implied if so line of generated task has been modified, we may regenerate it.
+        """
+        if self.env.context.get('no_project_create'):
+            return
+        so_line_task_global_project = self._get_so_lines_task_global_project()
+        so_line_new_project = self._get_so_lines_new_project()
+
+        # search so lines from SO of current so lines having their project generated, in order to check if the current one can
+        # create its own project, or reuse the one of its order.
+        map_so_project = {}
+        if so_line_new_project:
+            order_ids = self.mapped('order_id').ids
+            so_lines_with_project = self.search([('order_id', 'in', order_ids), ('project_id', '!=', False), ('product_id.service_tracking', 'in', ['project_only', 'task_in_project']), ('product_id.project_template_id', '=', False)])
+            map_so_project = {sol.order_id.id: sol.project_id for sol in so_lines_with_project}
+            so_lines_with_project_templates = self.search([('order_id', 'in', order_ids), ('project_id', '!=', False), ('product_id.service_tracking', 'in', ['project_only', 'task_in_project']), ('product_id.project_template_id', '!=', False)])
+            map_so_project_templates = {(sol.order_id.id, sol.product_id.project_template_id.id): sol.project_id for sol in so_lines_with_project_templates}
+
+        # search the global project of current SO lines, in which create their task
+        map_sol_project = {}
+        if so_line_task_global_project:
+            map_sol_project = {sol.id: sol.product_id.with_company(sol.company_id).project_id for sol in so_line_task_global_project}
+
+        def _can_create_project(sol):
+            if not sol.project_id:
+                if sol.product_id.project_template_id:
+                    return (sol.order_id.id, sol.product_id.project_template_id.id) not in map_so_project_templates
+                elif sol.order_id.id not in map_so_project:
+                    return True
+            return False
+
+        # we store the reference analytic account per SO
+        map_account_per_so = {}
+
+        # project_only, task_in_project: create a new project, based or not on a template (1 per SO). May be create a task too.
+        # if 'task_in_project' and project_id configured on SO, use that one instead
+        for so_line in so_line_new_project.sorted(lambda sol: (sol.sequence, sol.id)):
+            project = False
+            if so_line.product_id.service_tracking in ['project_only', 'task_in_project']:
+                project = so_line.project_id
+            if not project and _can_create_project(so_line):
+                project = so_line._timesheet_create_project()
+
+                # If the SO generates projects on confirmation and the project's SO is not set, set it to the project's SOL with the lowest (sequence, id)
+                if not so_line.order_id.project_id:
+                    so_line.order_id.project_id = project
+                # If no reference analytic account exists, set the account of the generated project to the account of the project's SO or create a new one
+                account = map_account_per_so.get(so_line.order_id.id)
+                if not account:
+                    account = so_line.order_id.project_account_id or self.env['account.analytic.account'].create(so_line.order_id._prepare_analytic_account_data())
+                    map_account_per_so[so_line.order_id.id] = account
+                project.account_id = account
+
+                if so_line.product_id.project_template_id:
+                    map_so_project_templates[(so_line.order_id.id, so_line.product_id.project_template_id.id)] = project
+                else:
+                    map_so_project[so_line.order_id.id] = project
+            elif not project:
+                # Attach subsequent SO lines to the created project
+                so_line.project_id = (
+                    map_so_project_templates.get((so_line.order_id.id, so_line.product_id.project_template_id.id))
+                    or map_so_project.get(so_line.order_id.id)
+                )
+            if so_line.product_id.service_tracking == 'task_in_project':
+                if not project:
+                    if so_line.product_id.project_template_id:
+                        project = map_so_project_templates[(so_line.order_id.id, so_line.product_id.project_template_id.id)]
+                    else:
+                        project = map_so_project[so_line.order_id.id]
+                if not so_line.task_id:
+                    so_line._timesheet_create_task(project=project)
+            so_line._handle_milestones(project)
+
+        # task_global_project: if not set, set the project's SO by looking at global projects
+        for so_line in so_line_task_global_project.sorted(lambda sol: (sol.sequence, sol.id)):
+            if not so_line.order_id.project_id:
+                so_line.order_id.project_id = map_sol_project.get(so_line.id)
+
+        # task_global_project: create task in global projects
+        for so_line in so_line_task_global_project:
+            if not so_line.task_id:
+                project = map_sol_project.get(so_line.id) or so_line.order_id.project_id
+                if project and so_line.product_uom_qty > 0:
+                    so_line._timesheet_create_task(project)
+                elif not project:
+                    raise UserError(_(
+                        "A project must be defined on the quotation %(order)s or on the form of products creating a task on order.\n"
+                        "The following product need a project in which to put its task: %(product_name)s",
+                        order=so_line.order_id.name,
+                        product_name=so_line.product_id.name,
+                    ))

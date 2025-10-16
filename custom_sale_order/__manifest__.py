@@ -3,9 +3,10 @@
     'name': 'Custom Sale Order',
     'version': '1.0',
     'summary': 'Custom changes to Sale Order',
-    'depends': ['sale','project','account','mail'],
+    'depends': ['sale','project','account','mail','industry_fsm','sale_project','sale_timesheet'],
     'data': [
         'data/mail_template.xml',
+        'data/task_stages.xml',
         # 'data/server_action.xml',
         'views/res_partner_extend.xml',
         'views/sale_order_views.xml',

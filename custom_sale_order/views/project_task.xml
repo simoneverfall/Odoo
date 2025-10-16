@@ -9,7 +9,31 @@
             <xpath expr="//label[@for='date_deadline']" position="after">
                 <field name="sale_order_ref" string="Sale order" readonly="1"/>
             </xpath>
+
+            <xpath expr="//field[@name='description']" position="replace">
+                <field name="sale_description" invisible="not sale_description"/>
+                <field name="description" type="html" options="{'collaborative': true, 'resizable': false}" placeholder="Add details about this task..." invisible="sale_description"/>
+            </xpath>
+
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="provider_id" readonly="1"/>
+            </xpath>
         </field>
     </record>
+
+    <!-- <record id="custom_sale_order_project_task_calendar_view_extend" model="ir.ui.view">
+        <field name="name">custom.sale.order.project.task.calendar.view.extend</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_calendar"/>
+        <field name="arch" type="xml">
+            <xpath expr="//calendar" position="inside">
+                <field name="user_ids" options="{'block': True, 'icon': 'fa fa-users'}"
+                       filters="1" widget="many2manyattendeeexpandable"
+                        avatar_field="avatar_128"
+                />
+            </xpath>
+        </field>
+
+    </record> -->
 
 </odoo>
