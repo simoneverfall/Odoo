@@ -70,8 +70,76 @@
                 <field name="provider_id" readonly="invoice_status == 'invoiced'"/>
                 <!-- <field name="case_manager_id" readonly="state == 'cancel' or locked" context="{'show_address': 1}"/> -->
             </xpath>
+
+            <xpath expr="//form//div[@class='oe_button_box']" position="inside">
+
+                
+
+                <button type="object" name="action_open_project" class="oe_stat_button" icon="fa-puzzle-piece" invisible="not project_id">
+                    <field name="custom_project_count" widget="statinfo" string="Project"/>
+                </button>
+
+                <button type="object" name="action_open_task_calendar" class="oe_stat_button" icon="fa-check" invisible="not task_id">
+                    <field name="custom_task_count" widget="statinfo" string="Task"/>
+                </button>
+            </xpath>
+
+            
         </field>
     </record>
+
+    <record id="custom_sale_order_project_task_view_inherit" model="ir.ui.view">
+        <field name="name">custom.sale.order.project.task.view.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_project.view_order_form_inherit_sale_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_view_project_ids']" position="replace">
+                <button type="object" name="action_view_project_ids" class="oe_stat_button" icon="fa-puzzle-piece" invisible="1" groups="project.group_project_user">
+                    <field name="project_count" widget="statinfo" string="Projects"/>
+                </button>
+            </xpath>
+
+            <xpath expr="//button[@name='action_view_task']" position="replace">
+                <button type="object" name="action_view_task" class="oe_stat_button" icon="fa-check" invisible="1" groups="project.group_project_user">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Tasks</span>
+                        <span class="o_stat_value">
+                            <field name="closed_task_count"/> / <field name="tasks_count"/>
+                            (<field name="completed_task_percentage" widget="percentage" options="{'digits': [1, 0]}"/>)
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="custom_sale_order_sale_timesheet_view_order_form_inherit" model="ir.ui.view">
+        <field name="name">custom.sale.order.sale.timesheet.view.order.form.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_timesheet.view_order_form_inherit_sale_timesheet"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//button[@name='action_view_timesheet']" position="replace">
+                <button type="object"
+                           name="action_view_timesheet"
+                           class="oe_stat_button"
+                           icon="fa-clock-o"
+                           invisible="1"
+                           groups="hr_timesheet.group_hr_timesheet_user">
+                           <div class="o_stat_info">
+                               <span class="o_stat_value">
+                                    <field name="timesheet_total_duration" class="mr4"/>
+                                    <field name="timesheet_encode_uom_id" options="{'no_open': True}"/>
+                                </span>
+                                <span class="o_stat_text">Recorded</span>
+                           </div>
+                        </button>
+            </xpath>
+
+        </field>
+    </record>
+
+    
 
     <!--    list View customizations -->
     <record id="sale_order_inherited_list_everfall" model="ir.ui.view">
@@ -91,6 +159,7 @@
 <!--                <field name="task_id" />-->
                      <button name="action_open_task_calendar"
                         string="View Task📅"
+                        invisible="not task_id"
                     type="object"
                     class="btn-link"
                 />
@@ -180,8 +249,10 @@
 
     <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
         <field name="search_view_id" ref="custom_sale_order.sale_order_custom_search_view"/>
+        <field name="context">{'search_default_my_quotation': 1, 'no_project_create': 1}</field>
     </record>
     <record id="sale.action_orders" model="ir.actions.act_window">
         <field name="search_view_id" ref="custom_sale_order.sale_order_custom_search_view"/>
+        <field name="context">{'no_project_create': 1}</field>
     </record>
 </odoo>
