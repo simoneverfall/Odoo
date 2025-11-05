@@ -97,18 +97,35 @@
             <xpath expr="//t[@t-call='web.external_layout']" position="attributes">
                 <attribute name="t-call">custom_Layout_reports.external_layout_custom</attribute>
             </xpath>
-            <xpath expr="//t[@t-set='information_block']" position="replace">
+            <!-- <xpath expr="//t[@t-set='information_block']" position="replace"> -->
+                <xpath expr="//t[@t-if='doc.partner_shipping_id == doc.partner_invoice_id
+                             and doc.partner_invoice_id != doc.partner_id
+                             or doc.partner_shipping_id != doc.partner_invoice_id']" position="replace">
                 <!-- Your custom content goes here -->
+                 <t t-if="doc.client_id == doc.provider_id
+                             and doc.provider_id != doc.partner_id
+                             or doc.client_id != doc.provider_id">
                 <t t-set="information_block">
                     <strong>
-                        <t t-if="doc.partner_shipping_id == doc.partner_invoice_id">
+                        <!-- OLD FLOW -->
+                        <!-- <t t-if="doc.partner_shipping_id == doc.partner_invoice_id">
+                            Invoicing and Shipping Address
+                        </t> -->
+                        <!-- OLD FLOW -->
+
+                        <!-- NEW FLOW -->
+
+                        <t t-if="doc.client_id == doc.provider_id">
                             Invoicing and Shipping Address
                         </t>
+
+                        <!-- NEW FLOW -->
                         <t t-else="">
                             Invoicing Address
                         </t>
                     </strong>
-                    <div>
+                    <!-- OLD FLOW -->
+                    <!-- <div>
                         <t t-if="doc.partner_invoice_id.display_name">
                             <div t-attf-style="line-height: 25px;"><t t-esc="doc.partner_invoice_id.display_name"/></div>
                         </t>
@@ -126,16 +143,53 @@
                         </t>
                         <t t-if="doc.partner_invoice_id.state_id">
                             <div t-attf-style="line-height: 15px;"><t t-esc="doc.partner_invoice_id.state_id.name"/></div>
+                        </t> -->
+                        <!-- Country is intentionally omitted -->
+                        <!-- <t t-if="doc.partner_invoice_id.phone">
+                            <div t-attf-style="line-height: 30px;"><strong><i class="fa fa-phone"/></strong> <t t-esc="doc.partner_invoice_id.phone"/></div>
+                        </t>
+                    </div> -->
+
+                    <!-- OLD FLOW -->
+
+                    <!-- NEW FLOW -->
+
+                    <div>
+                        <t t-if="doc.provider_id.display_name">
+                            <div t-attf-style="line-height: 25px;"><t t-esc="doc.provider_id.display_name"/></div>
+                        </t>
+                        <t t-if="doc.provider_id.street">
+                            <div t-attf-style="line-height: 15px;"><t t-esc="doc.provider_id.street"/></div>
+                        </t>
+                        <t t-if="doc.provider_id.street2">
+                            <div t-attf-style="line-height: 15px;"><t t-esc="doc.provider_id.street2"/></div>
+                        </t>
+                        <t t-if="doc.provider_id.city or doc.provider_id.zip">
+                            <div >
+                                <t t-esc="doc.provider_id.city"/>
+                                <t t-if="doc.provider_id.zip">, <t t-esc="doc.provider_id.zip"/></t>
+                            </div>
+                        </t>
+                        <t t-if="doc.provider_id.state_id">
+                            <div t-attf-style="line-height: 15px;"><t t-esc="doc.provider_id.state_id.name"/></div>
                         </t>
                         <!-- Country is intentionally omitted -->
-                        <t t-if="doc.partner_invoice_id.phone">
-                            <div t-attf-style="line-height: 30px;"><strong><i class="fa fa-phone"/></strong> <t t-esc="doc.partner_invoice_id.phone"/></div>
+                        <t t-if="doc.provider_id.phone">
+                            <div t-attf-style="line-height: 30px;"><strong><i class="fa fa-phone"/></strong> <t t-esc="doc.provider_id.phone"/></div>
                         </t>
                     </div>
 
-                    <t t-if="doc.partner_shipping_id != doc.partner_invoice_id">
+                    <!-- NEW FLOW -->
+
+                    <!-- OLD FLOW -->
+                    <!-- <t t-if="doc.partner_shipping_id != doc.partner_invoice_id"> -->
+                    <!-- OLD FLOW -->
+                    
+                    <!-- NEW FLOW -->
+                     <t t-if="doc.client_id != doc.provider_id">
                         <strong>Delivery Address</strong>
-                        <div>
+                        <!-- OLD FLOW  -->
+                        <!-- <div>
                             <t t-if="doc.partner_shipping_id.name">
                                 <div t-attf-style="line-height: 25px;"><t t-esc="doc.partner_shipping_id.name"/></div>
                             </t>
@@ -153,14 +207,46 @@
                             </t>
                             <t t-if="doc.partner_shipping_id.state_id">
                                 <div t-attf-style="line-height: 15px;"><t t-esc="doc.partner_shipping_id.state_id.name"/></div>
-                            </t>
+                            </t> -->
                             <!-- Country intentionally omitted -->
-                            <t t-if="doc.partner_shipping_id.phone">
+                            <!-- <t t-if="doc.partner_shipping_id.phone">
                                 <div t-attf-style="line-height: 30px;"><strong><i class="fa fa-phone"/> </strong> <t t-esc="doc.partner_shipping_id.phone"/></div>
                             </t>
+                        </div> -->
+
+                        <!-- OLD FLOW -->
+
+                        <!-- NEW FLOW -->
+
+                        <div>
+                            <t t-if="doc.client_id.name">
+                                <div t-attf-style="line-height: 25px;"><t t-esc="doc.client_id.name"/></div>
+                            </t>
+                            <t t-if="doc.client_id.street">
+                                <div t-attf-style="line-height: 15px;"><t t-esc="doc.client_id.street"/></div>
+                            </t>
+                            <t t-if="doc.client_id.street2">
+                                <div t-attf-style="line-height: 15px;"><t t-esc="doc.client_id.street2"/></div>
+                            </t>
+                            <t t-if="doc.client_id.city or doc.client_id.zip">
+                                <div>
+                                    <t t-esc="doc.client_id.city"/>
+                                    <t t-if="doc.client_id.zip">, <t t-esc="doc.client_id.zip"/></t>
+                                </div>
+                            </t>
+                            <t t-if="doc.client_id.state_id">
+                                <div t-attf-style="line-height: 15px;"><t t-esc="doc.client_id.state_id.name"/></div>
+                            </t>
+                            <!-- Country intentionally omitted -->
+                            <t t-if="doc.client_id.phone">
+                                <div t-attf-style="line-height: 30px;"><strong><i class="fa fa-phone"/> </strong> <t t-esc="doc.client_id.phone"/></div>
+                            </t>
                         </div>
+
+                        <!-- NEW FLOW -->
                     </t>
 
+                </t>
                 </t>
 
             </xpath>
