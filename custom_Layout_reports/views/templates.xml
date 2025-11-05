@@ -83,6 +83,12 @@
             <xpath expr="//t[@t-call='web.external_layout']" position="attributes">
                 <attribute name="t-call">custom_Layout_reports.external_layout_custom</attribute>
             </xpath>
+
+            <!-- <xpath expr="//div[@t-field='doc.partner_id']" position="before">
+               <strong>
+                    Provider
+               </strong>
+            </xpath> -->
             <!--            <xpath expr="//div[@name='comment']" position="before">-->
             <!--                <strong style="font-weight: bold;">Due Date:<span t-field="o.invoice_date_due">2025-03-21</span></strong>-->
             <!--            </xpath>-->
@@ -102,9 +108,7 @@
                              and doc.partner_invoice_id != doc.partner_id
                              or doc.partner_shipping_id != doc.partner_invoice_id']" position="replace">
                 <!-- Your custom content goes here -->
-                 <t t-if="doc.client_id == doc.provider_id
-                             and doc.provider_id != doc.partner_id
-                             or doc.client_id != doc.provider_id">
+           
                 <t t-set="information_block">
                     <strong>
                         <!-- OLD FLOW -->
@@ -247,11 +251,13 @@
                     </t>
 
                 </t>
-                </t>
+            
 
             </xpath>
             <xpath expr="//div[@t-field='doc.partner_id']" position="before">
-                <p style="font-weight: 600;">Case Manager</p>
+               <strong>
+                    Case Manager
+               </strong>
             </xpath>
         </template>
         <template id="report_purchasequotation_document_custom" inherit_id="purchase.report_purchasequotation_document">

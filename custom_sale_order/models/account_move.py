@@ -14,7 +14,7 @@ class AccountMove(models.Model):
         domain=[('type', '=', 'binary')],
     )
     details = fields.Char(string="Details", related="partner_shipping_id.street")
-    client_name = fields.Char(string="Suburb", related="partner_shipping_id.name")
+    client_name = fields.Char(string="Client Name", related="partner_shipping_id.name")
     provider_name = fields.Char(string="Provider Name", related="partner_id.name")
     suburb = fields.Char(
         string="Suburb",
