@@ -7,7 +7,7 @@
     'website': "https://www.yourcompany.com",
     'category': 'Uncategorized',
     'version': '0.1',
-    'depends': ['base',"sale","account"],
+    'depends': ['base',"sale","account","purchase"],
     'data': [
         'views/templates.xml',
     ],

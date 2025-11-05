@@ -66,7 +66,7 @@
             </xpath>
 
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="client_id" string="Delivery Address" options="{'no_create':1}" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True, 'only_name': True}" readonly="state in ('sale','cancel')"/>
+                <field name="client_id" string="Client Details" options="{'no_create':1}" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True, 'only_name': True}" readonly="state in ('sale','cancel')"/>
                 <field name="provider_id" readonly="invoice_status == 'invoiced'"/>
                 <!-- <field name="case_manager_id" readonly="state == 'cancel' or locked" context="{'show_address': 1}"/> -->
             </xpath>

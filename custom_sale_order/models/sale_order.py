@@ -43,7 +43,7 @@ class SaleOrder(models.Model):
     details = fields.Char(string="Details",related="client_id.street")
 
     # client_name = fields.Char(string="Suburb",related="partner_shipping_id.name")
-    client_name = fields.Char(string="Suburb",related="client_id.name")
+    client_name = fields.Char(string="Client Name",related="client_id.name")
 
     # provider_name = fields.Char(string="Case Manager",related="partner_id.name")
 
