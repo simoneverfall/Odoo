@@ -108,9 +108,7 @@
                              and doc.partner_invoice_id != doc.partner_id
                              or doc.partner_shipping_id != doc.partner_invoice_id']" position="replace">
                 <!-- Your custom content goes here -->
-                 <t t-if="doc.client_id == doc.provider_id
-                             and doc.provider_id != doc.partner_id
-                             or doc.client_id != doc.provider_id">
+           
                 <t t-set="information_block">
                     <strong>
                         <!-- OLD FLOW -->
@@ -253,7 +251,7 @@
                     </t>
 
                 </t>
-                </t>
+            
 
             </xpath>
             <xpath expr="//div[@t-field='doc.partner_id']" position="before">
