@@ -361,7 +361,7 @@ class SaleOrder(models.Model):
         values = {
             'ref': self.client_order_ref or '',
             'move_type': 'out_invoice',
-            'narration': self.note,
+            # 'narration': self.note,
             'currency_id': self.currency_id.id,
             'campaign_id': self.campaign_id.id,
             'medium_id': self.medium_id.id,
