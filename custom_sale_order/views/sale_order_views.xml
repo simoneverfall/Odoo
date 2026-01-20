@@ -25,7 +25,7 @@
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="project_id" readonly="1"/>
-                <field name="x_state_custom"/>
+                <field name="x_state_custom" width="170px;"/>
             </xpath>
 
             <!-- Previous Logic  -->
@@ -148,7 +148,7 @@
         <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='amount_total']" position="after">
-                <field name="x_state_custom" widget="badge" decoration-info="x_state_custom == 'booked' or x_state_custom == 'approved'" decoration-warning="x_state_custom == 'hold'" decoration-primary="x_state_custom == 'awaiting_approval' or x_state_custom == 'no_quote_required'" decoration-danger="x_state_custom == 'cancelled'" decoration-success="x_state_custom == 'complete'"/>
+                <field name="x_state_custom" widget="badge" width="170px;" decoration-info="x_state_custom == 'booked' or x_state_custom == 'approved'" decoration-warning="x_state_custom == 'hold'" decoration-primary="x_state_custom == 'awaiting_approval' or x_state_custom == 'no_quote_required'" decoration-danger="x_state_custom == 'cancelled'" decoration-success="x_state_custom == 'complete'"/>
             </xpath>
             <xpath expr="//field[@name='validity_date']" position="replace">
             </xpath>
@@ -200,6 +200,20 @@
              <xpath expr="//field[@name='partner_id']" position="before">
                 <field name="provider_id"/>
              </xpath>
+
+             <xpath expr="//field[@name='amount_untaxed']" position="before">
+                 <field name="amount_undiscounted" optional="show" width="200px;"/>
+                <field name="total_discount" optional="show"/>
+             </xpath>
+
+             <xpath expr="//field[@name='amount_untaxed']" position="attributes">
+                <attribute name="optional">show</attribute>
+                <attribute name="width">170px;</attribute>                
+             </xpath>
+
+             <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="width">135px;</attribute>                
+            </xpath>
 
              <!-- New Logic -->
         </field>
