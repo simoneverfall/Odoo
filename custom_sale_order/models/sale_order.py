@@ -77,6 +77,8 @@ class SaleOrder(models.Model):
 
     custom_task_count = fields.Integer(compute="_compute_custom_task_count", store=True)
 
+    total_discount = fields.Monetary(compute="_compute_total_discount", digits=0)
+
 
     @api.depends('project_id')
     def _compute_custom_project_count(self):
@@ -409,6 +411,19 @@ class SaleOrder(models.Model):
         
         
         return super(SaleOrder, self.with_context(**so_ctx)).message_post(**kwargs)
+    
+    @api.depends('order_line.discount','order_line.product_uom_qty','order_line.price_unit')
+    def _compute_total_discount(self):
+        for record in self:
+            total_discount = 0.0
+            if not record.order_line:
+                record.total_discount = 0.0
+            if record.order_line:
+                for line in record.order_line:
+                    total_discount += ((line.price_unit * line.product_uom_qty) * (line.discount/100))
+                record.total_discount = total_discount
+            
+
 
 
 class SaleAdvancePaymentInv(models.TransientModel):
