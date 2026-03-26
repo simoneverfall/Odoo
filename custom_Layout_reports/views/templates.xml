@@ -23,7 +23,7 @@
             <div t-attf-class="header o_company_#{company.id}_layout">
                 <div class="row mb8">
                     <div class="col-4">
-                        <img t-if="company.logo" class="o_company_logo_big" t-att-src="image_data_uri(company.logo)" alt="Logo" style="min-width: 300px;"/>
+                        <img t-if="company.logo" class="o_company_logo_big" t-att-src="image_data_uri(company.logo)" alt="Logo" style="min-height: 200px;"/>
                     </div>
                     <div class="col-8 text-end mb4">
                         <div name="company_address" class="float-end mb4">
