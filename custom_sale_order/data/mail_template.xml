@@ -37,6 +37,8 @@
                     <li>Staff Member: <t t-esc="object.user_id.name"/></li>
                     <li>Client Name <t t-esc="object.client_id.name"/></li>
                     <li>Client Address: <t t-esc="object.client_id.street"/> <t t-esc="object.client_id.city"/> <t t-esc="object.client_id.state_id.name"/> <t t-esc="object.client_id.zip"/> <t t-esc="object.client_id.country_id.name"/></li>
+                    <li>Planned Date: <t t-esc="object.task_id.planned_date_start.strftime('%Y-%m-%d %H:%M:%S')"/> -> <t t-esc="object.task_id.planned_date_start.strftime('%Y-%m-%d %H:%M:%S')"/></li>
+
                 </ul>
             </field>
         </record>
