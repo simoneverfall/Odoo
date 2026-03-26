@@ -108,6 +108,8 @@ class SaleOrder(models.Model):
     def create(self, vals):
         order = super().create(vals)
         if vals.get("x_state_custom") == "booked":
+            if not order.task_id:
+                raise ValidationError(_('Please assign a task before marking this order as "Booked".'))
             order._send_booked_email()
         if vals.get("x_state_custom") == "complete":
             order._send_completion_email()
@@ -115,14 +117,15 @@ class SaleOrder(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if vals.get("x_state_custom") == "booked":
+        if "x_state_custom" in vals:
             for order in self:
-                order._send_booked_email()
-        if vals.get("x_state_custom") == "complete":
-            for order in self:
-                order.with_context(
-                completion_email=True
-            )._send_completion_email()
+                state = vals["x_state_custom"]
+                if state == "booked":
+                    if not order.task_id:
+                        raise ValidationError(_('Please assign a task before marking this order as "Booked".'))
+                    order._send_booked_email()
+                elif state == "complete":
+                    order.with_context(completion_email=True)._send_completion_email()
         return res
 
     def _send_completion_email(self):
